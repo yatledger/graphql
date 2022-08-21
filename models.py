@@ -1,5 +1,6 @@
-from typing import Optional, List
+from typing import Optional
 from pydantic import BaseModel, PositiveInt
+import decimal
 
 class Tx(BaseModel):
     credit: str
@@ -8,7 +9,7 @@ class Tx(BaseModel):
     time: int
     sign: str
     hash: Optional[str]
-    msg: Optional[str]
+    msg: Optional[str] = ''
     #type
 
 class UserContent(BaseModel):
