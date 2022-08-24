@@ -17,13 +17,13 @@ query = gql(
         skip: $skip,
         limit: $limit
       ) {
-      amount
-      credit
-      debit
-      msg
-      time
-      hash
-    }
+            amount
+            credit
+            debit
+            msg
+            time
+            hash
+        }
     }
 """
 )

@@ -1,3 +1,4 @@
+from audioop import add
 import strawberry
 import motor.motor_asyncio
 import decimal
@@ -25,8 +26,7 @@ class GetTx:
     hash: strawberry.auto
     msg: strawberry.auto
 
-async def load_tx(amount, msg, time, skip, limit) -> List[GetTx]:
-    if msg != None: print(msg)
+async def load_tx(amount, addr, msg, time, skip, limit) -> List[GetTx]:
     if amount >= 0: amount_direction = '$gt'
     else: amount_direction = '$lt'; amount = -amount
     
@@ -37,6 +37,15 @@ async def load_tx(amount, msg, time, skip, limit) -> List[GetTx]:
         'amount': {amount_direction: amount},
         'time': {time_direction: time},
     }
+
+    if msg != None:
+        if msg == True: q['msg'] = {'$ne': 'null'}
+        else: q['msg'] = 'null'
+
+    if addr:
+        q['$or'] = [{'credit': addr}, {'debit': addr}]
+    
+    print(q)
 
     return [
         GetTx.from_pydantic(Tx(**t)) for t in await txs.find({
@@ -53,13 +62,14 @@ class Query:
     @strawberry.field
     async def tx(
         self,
+        msg: bool = None,
+        addr: str = '',
         amount: int = 0,
-        msg: bool = False, #TODO: None
         time: int = 0,
         skip: int = 0,
         limit: int = 100
     ) -> List[GetTx]:
-        return await load_tx(amount, msg, time, skip, limit)
+        return await load_tx(amount, addr, msg, time, skip, limit)
 
 
 schema = strawberry.Schema(query=Query)
