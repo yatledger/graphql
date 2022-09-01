@@ -5,11 +5,12 @@ class Tx(BaseModel):
     credit: str
     debit: str
     amount: PositiveInt
-    time: int
+    uniq: str
     sign: str
-    hash: Optional[str]
+    type: Optional[int] = 0
     msg: Optional[str] = ''
-    #type
+    time: Optional[int]
+    hash: Optional[str]
 
 class UserContent(BaseModel):
     addr: str
