@@ -1,4 +1,3 @@
-from audioop import add
 import strawberry
 import motor.motor_asyncio
 import decimal
@@ -7,6 +6,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from strawberry.asgi import GraphQL
 from typing import List, Optional
+
+from aio_pika import connect_robust, Message, DeliveryMode
 
 from models import Tx, User, UserContent
 
@@ -78,6 +79,7 @@ schema = strawberry.Schema(query=Query)
 graphql_app = GraphQL(schema)#graphiql=False
 
 app = FastAPI()
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -85,5 +87,13 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+@app.on_event("startup")
+async def startup() -> None:
+    global mq
+    connection = await connect_robust("amqp://guest:guest@localhost/")
+    mq = await connection.channel()
+    queue = await mq.declare_queue("tx", durable=True)
+
 app.add_route("/graphql", graphql_app)
 app.add_websocket_route("/graphql", graphql_app)
