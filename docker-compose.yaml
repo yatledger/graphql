@@ -1,0 +1,24 @@
+version: "3"
+
+services:
+  rabbitmq:
+    image: rabbitmq:latest
+    container_name: rabbit
+    hostname: rabbit
+    ports:
+      - 5672:5672
+      - 15672:15672
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongo
+    hostname: mongo
+    ports:
+      - 27017:27017
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    hostname: redis
+    ports:
+      - 6379:6379
