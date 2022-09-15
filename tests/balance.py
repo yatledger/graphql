@@ -4,10 +4,12 @@ import math
 
 asks = []
 votes = []
+tx = []
 balances = {}
 
-class Balance(BaseModel):
-    addr: str
+class Tx(BaseModel):
+    debit: str
+    credit: str
     amount: int
 
 class Ask(BaseModel):
@@ -33,6 +35,7 @@ def addr_asks(addr: str) -> List:
     return a
 
 def addr_karma(addr: str) -> int:
+    print(f'Balance ({addr_balance(addr)}) / Emission ({emission()})')
     return addr_balance(addr) / emission()
 
 def ask_votes(id: str) -> List:
@@ -49,64 +52,70 @@ def ask_votes(id: str) -> List:
 def ask_balance(id: str) -> int:
     for ask in asks:
         if ask.id == id:
-            print('Ask ammount:', ask.amount)
-            print('Ask votes:', ask_votes(id))
+            print(f'{ask.addr} ask {ask.id} for {ask.amount}')
             balance = 0
             for vote in ask_votes(id):
-                print('Vote from:', vote, '| Karma:', addr_karma(vote))
-                balance += ask.amount * addr_karma(vote)
+                print('------')
+                print(f'Vote from: {vote}')
+                k = addr_karma(vote)
+                print(f'Karma: {k}')
+                balance += ask.amount * k
+                print('------')
+            print(f'{ask.id} ask balance: {math.floor(balance)}')
             return math.floor(balance)
 
-def addr_set_balance(addr: str):
+def addr_current_balance(addr: str):
     asks = addr_asks(addr)
-    b = 0
+    b = 1
     for ask in asks:
         b += ask_balance(ask)
     return b
 
-
+def calc_balances():
+    for a in balances:
+        print('---')
+        b = addr_current_balance(a)
+        balances.update({a: b})
+        print(a, b)
+        print('---')
 class Person:
     def __init__(self, addr: str):
-        self.balance = 0
-        self.addr = addr
         balances.update({addr: 1})
+        self.addr = addr
+        
     def ask(self, id: str, amount: int):
         asks.append(Ask(addr=self.addr, id=id, amount=amount))
+
     def vote(self, id: str):
         votes.append(Vote(addr=self.addr, id=id))
 
+    def send(self, addr, amount):
+        tx.append(Tx(debit=addr, credit = self.addr, amount=amount))
+
 a = Person(addr = 'Foundation')
-print('Emission:', emission())
-a.ask('first', 21000)
-a.vote('first')
+b = Person(addr = 'Bob')
+c = Person(addr = 'Alice')
+a.ask('1', 21000)
+a.vote('1')
+c.vote('1')
+
+b.ask('2', 1200)
+a.vote('2')
+
+c.ask('3', 2400)
+c.vote('3')
+
+a.ask('4', 10000)
+b.vote('4')
+
+a.send('Bob', 100)
+
+for i in range(10):
+    calc_balances()
+
 print('Asks:', asks)
 print('Votes:', votes)
-a.balance = addr_set_balance('Foundation')
-print('First ask balance:', a.balance)
-balances.update({a.addr: a.balance})
-print(addr_balance(a.addr))
-print('-------')
-b = Person(addr = 'John')
-print('Emission:', emission())
-b.ask('second', 1200)
-a.vote('second')
-print('Asks:', asks)
-print('Votes:', votes)
-b.balance = addr_set_balance('John')
-print('Second ask balance:', b.balance)
-balances.update({b.addr: b.balance})
-print('John balance', addr_balance(b.addr))
-print('-------')
-c = Person(addr = 'Liza')
-print('Emission:', emission())
-c.ask('third', 2400)
-c.vote('third')
-b.vote('third')
-print('Asks:', asks)
-print('Votes:', votes)
-c.balance = addr_set_balance('Liza')
-print('Third ask balance:', c.balance)
-balances.update({c.addr: c.balance})
-print('Liza balance', addr_balance(c.addr))
-print('-------')
+print('Tx:', tx)
+
+print('Balances:', balances)
 print('Emission:', emission())
