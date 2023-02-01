@@ -2,8 +2,13 @@ from typing import List, Optional
 from pydantic import BaseModel
 import math
 import time
+import sys
 from functools import wraps
 import logging
+
+
+#sys.path.append('../src')
+#from src.balance import qwe
 
 logfmt = '%(levelname)s | %(message)s'
 logging.basicConfig(level=logging.DEBUG, format=logfmt)
@@ -163,9 +168,9 @@ print('Balances:', balances)
 
 print('Transactions:', netto)
 
-'''for i in range(5):
+for i in range(5):
     calc_balances()
-    print(f'{i} Balances: {balances}')'''
+    print(f'{i} Balances: {balances}')
 
 print('Asks:', asks)
 print('Votes:', votes)

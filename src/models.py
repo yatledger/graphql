@@ -9,6 +9,7 @@ class User(BaseModel):
     cover: Optional[str]
     desc: Optional[str]
     sign: str
+
 class NFT(BaseModel):
     creater: str
     img: str
@@ -23,13 +24,12 @@ class Ask(BaseModel):
     addr: str
     amount: PositiveInt
     uniq: str
-    title: Optional[str]
-    cover: Optional[str]
-    desc: Optional[str]
     sign: str
+    title: Optional[str] = ''
+    cover: Optional[str] = ''
+    desc: Optional[str] = ''
     prev_hash: Optional[str]
     hash: Optional[str]
-    msg: Optional[str] = ''
     time: Optional[int]
 
 class Fut(BaseModel):
@@ -77,6 +77,7 @@ class Move(BaseModel):
 class Vote(BaseModel):
     addr: str
     id: str
+    like: bool
     uniq: str
     sign: str
     prev_hash: Optional[str]

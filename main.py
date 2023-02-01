@@ -1,24 +1,25 @@
 import strawberry
 import motor.motor_asyncio
 import decimal
-
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from strawberry.asgi import GraphQL
 from typing import List, Optional
-
 from aio_pika import connect_robust, Message, DeliveryMode
+import aioredis
 
-from models import Tx, User, UserContent
+from src.models import Tx, User
 
 cli = motor.motor_asyncio.AsyncIOMotorClient('localhost', 27017)
 
 db = cli.yat
-txs = db.txdev
-usrs = db.users
+txs = db.tx
+users = db.users
+asks = db.asks
+votes = db.votes
 
 @strawberry.experimental.pydantic.type(model=Tx)
-class GetTx:
+class GraphTx:
     credit: Optional[str]
     debit: Optional[str]
     amount: Optional[float]
@@ -27,7 +28,22 @@ class GetTx:
     hash: strawberry.auto
     msg: strawberry.auto
 
-async def load_tx(amount, addr, msg, time, skip, limit) -> List[GetTx]:
+@strawberry.experimental.pydantic.type(model=User, all_fields=True)
+class GraphUser:
+    ...
+
+async def load_balance(addr):
+    #ok = await redis.set("key", "value")
+    #assert ok
+    b = await redis.get(addr)
+    print(int(b))
+    return int(b)
+
+async def load_user(addr, name, cover, desc, sign):
+    print(addr, name, cover, desc, sign)
+    return None
+
+async def load_tx(amount, addr, msg, time, skip, limit) -> List[GraphTx]:
     if amount >= 0: amount_direction = '$gt'
     else: amount_direction = '$lt'; amount = -amount
     
@@ -49,7 +65,7 @@ async def load_tx(amount, addr, msg, time, skip, limit) -> List[GetTx]:
     print(q)
 
     return [
-        GetTx.from_pydantic(Tx(**t)) for t in await txs.find({
+        GraphTx.from_pydantic(Tx(**t)) for t in await txs.find({
             '$query': q,
             '$orderby': {'_id': -1}
             })
@@ -69,8 +85,26 @@ class Query:
         time: int = 0,
         skip: int = 0,
         limit: int = 100
-    ) -> List[GetTx]:
+    ) -> List[GraphTx]:
         return await load_tx(amount, addr, msg, time, skip, limit)
+    
+    @strawberry.field
+    async def user(
+        self,
+        addr: str = '',
+        name: str = '',
+        cover: str = '',
+        desc: str = '',
+        sign: str = ''
+    ) -> None:
+        return await load_user(addr, name, cover, desc, sign)
+
+    @strawberry.field
+    async def balance(
+        self,
+        addr: str = ''
+    ) -> float:
+        return await load_balance(addr)
 
 
 schema = strawberry.Schema(query=Query)
@@ -94,6 +128,8 @@ async def startup() -> None:
     connection = await connect_robust("amqp://guest:guest@localhost/")
     mq = await connection.channel()
     queue = await mq.declare_queue("tx", durable=True)
+    global redis
+    redis = await aioredis.from_url("redis://localhost",  db=0)
 
 app.add_route("/graphql", graphql_app)
 app.add_websocket_route("/graphql", graphql_app)
