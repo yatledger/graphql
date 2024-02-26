@@ -52,7 +52,6 @@ for _ in range(10):
             cover = '',
             desc = '',
             sign = signed,
-            prev_hash = '',
             hash = hash,
             time = int(round(time.time() * 1000)))
         r = db_asks.insert_one(dict(a))
@@ -79,7 +78,6 @@ for _ in range(10):
                 like = like,
                 uniq = uniq,
                 sign = signed,
-                prev_hash = '',
                 hash = hash,
                 time = int(round(time.time() * 1000)))
             r = db_votes.insert_one(dict(v))

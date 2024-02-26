@@ -21,17 +21,15 @@ query = gql(
         $sign: Str,
         $uniq: Str,
         $msg: Str,
-        $type: Int,
         
     ) {
-      send (
+      sendTx (
         debit: $debit,
         credit: $credit,
         amount: $amount,
         sign: $dsign,
         uniq: $uniq,
         msg: $msg,
-        type: $type
       ) {
             status
         }
@@ -46,7 +44,7 @@ for _ in range(0, 10):
     a = randint(100, 110)
     u = int(round(time.time() * 1000))
     m = str(randint(0, 100000))
-    h = c + d + str(a) + str(m) + str(t)
+    h = c + d + str(a) + str(m) + str(u)
 
     priv = unhexlify(priv)
     signing_key = SigningKey(priv)
@@ -59,8 +57,7 @@ for _ in range(0, 10):
         "amount": a,
         "sign": s,
         "uniq": u,
-        "msg": m,
-        #"type": t
+        "msg": m
     }
     print(params)
     result = client.execute(query, variable_values=params)
