@@ -10,6 +10,18 @@ class User(BaseModel):
     desc: Optional[str]
     sign: str
 
+class Token(BaseModel):
+    creater: str
+    amount: int
+    tiker: str
+    img: str
+    title: str
+    desc: str
+    uniq: str
+    sign: str
+    hash: Optional[str]
+    time: Optional[int]
+
 class NFT(BaseModel):
     creater: str
     img: str
@@ -17,7 +29,7 @@ class NFT(BaseModel):
     desc: str
     uniq: str
     sign: str
-    hash: Optional[str] #from sign
+    hash: Optional[str]
     time: Optional[int]
 
 class Ask(BaseModel):
@@ -28,7 +40,6 @@ class Ask(BaseModel):
     title: Optional[str] = ''
     cover: Optional[str] = ''
     desc: Optional[str] = ''
-    prev_hash: Optional[str]
     hash: Optional[str]
     time: Optional[int]
 
@@ -58,7 +69,6 @@ class Tx(BaseModel):
     amount: PositiveInt
     uniq: str
     sign: str
-    prev_hash: Optional[str]
     hash: Optional[str]
     msg: Optional[str] = ''
     time: Optional[int]
@@ -70,7 +80,6 @@ class Move(BaseModel):
     id: str
     uniq: str
     sign: str
-    prev_hash: Optional[str]
     hash: Optional[str]
     time: Optional[int]
 
@@ -80,6 +89,5 @@ class Vote(BaseModel):
     like: bool
     uniq: str
     sign: str
-    prev_hash: Optional[str]
     hash: Optional[str]
     time: Optional[int]
